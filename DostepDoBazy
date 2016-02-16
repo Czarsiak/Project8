@@ -1,0 +1,51 @@
+package baza;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+public class DostepDoBazy {
+	private Connection polaczenie;
+	
+	public DostepDoBazy() throws BladDanych {
+		try {
+			polaczenie = DriverManager.getConnection("jdbc:sqlite:bank.db");
+		} catch (SQLException e) {
+			throw new BladDanych("Błąd przy otwieraniu połączenia", e);
+		}
+	}
+	
+	public void close() throws BladDanych {
+		if(polaczenie != null)
+			try {
+				polaczenie.close();
+			} catch (SQLException e) {
+				throw new BladDanych("Błą przy zamykaniu połączenia", e);
+			}
+	}
+
+	public void przelew(int numerZrodlowy, int numerDocelowy, long kwota) throws BladDanych {
+		String sql1 = "UPDATE konta SET saldo = saldo - ? WHERE numer = ?";
+		String sql2 = "UPDATE konta SET saldo = saldo + ? WHERE numer = ?";
+		
+		try(PreparedStatement st = polaczenie.prepareStatement(sql1)) {
+			st.setLong(1, kwota);
+			st.setInt(2, numerZrodlowy);
+			st.executeUpdate();
+		} catch (SQLException e) {
+			throw new BladDanych("Błąd przy przelewie", e);
+		}
+
+		try(PreparedStatement st = polaczenie.prepareStatement(sql2)) {
+			st.setLong(1, kwota);
+			st.setInt(2, numerDocelowy);
+			st.executeUpdate();
+		} catch (SQLException e) {
+			throw new BladDanych("Błąd przy przelewie", e);
+		}
+	}
+
+	
+	
+}
