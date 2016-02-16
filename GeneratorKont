@@ -1,0 +1,37 @@
+package baza;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class GeneratorKont {
+
+	public static void main(String[] args) {
+		int poczatkowyNumer = 10;
+		int koncowyNumer = 20;
+		int saldo = 2000;
+		String wl = "Adam Nowak";
+		
+		try(Connection c = DriverManager.getConnection("jdbc:sqlite:bank.db");
+			PreparedStatement st = c.prepareStatement(
+					"INSERT INTO konta(numer, saldo, wlasciciel) VALUES (?, ?, ?)")) {
+			
+			for(int numer = poczatkowyNumer; numer <= koncowyNumer; numer++) {
+				st.setInt(1, numer);
+				st.setInt(2, saldo);
+				st.setString(3, wl);
+				st.addBatch();
+			}
+			st.executeBatch();
+			
+			System.out.println("Zapisałem");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+}
